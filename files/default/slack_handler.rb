@@ -28,12 +28,13 @@ end
 require "timeout"
 
 class Chef::Handler::Slack < Chef::Handler
-  attr_reader :team, :api_key, :config, :timeout, :fail_only, :detail_level
+  attr_reader :team, :api_key, :config, :timeout, :fail_only, :detail_level, :webhook_url
 
   def initialize(config = {})
     @config  = config.dup
     @team    = @config.delete(:team)
     @api_key = @config.delete(:api_key)
+    @webhook_url = @config.delete(:webhook_url)
     @timeout = @config.delete(:timeout) || 15
     @fail_only = @config.delete(:fail_only) || false
     @detail_level = @config.delete(:detail_level) || 'basic'
@@ -73,12 +74,35 @@ class Chef::Handler::Slack < Chef::Handler
   end
 
   def slack_message(content)
-    slack = Slackr::connect(team, api_key, config)
-    slack.say(content)
+    if webhook_url
+      slack_webhook_message(content)
+    else 
+      slack = Slackr::connect(team, api_key, config)
+      slack.say(content)
+    end
   end
 
   def run_status_human_readable
     run_status.success? ? "succeeded" : "failed"
+  end
+
+  def slack_webhook_message(content)
+    url = URI.parse(webhook_url)
+    payload = { 
+      "text" => content, 
+      "icon_emoji" => config[:icon_emoji], 
+      "icon_url" => config[:icon_url]
+    }
+    json = payload.to_json
+    http = Net::HTTP.new(url.host, url.port)
+    
+    if url.scheme == 'https'
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    end
+
+    res = http.post(url.path, json)
+    Chef::Log.info(res)
   end
 
 end

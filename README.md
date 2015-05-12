@@ -15,7 +15,10 @@ Attributes
 This cookbook uses the following attributes to configure how it is installed.
 
 * `node['chef_client']['handler']['slack']['team']` - Your Slack team name (<team-name>.slack.com)
-* `node['chef_client']['handler']['slack']['api_key']` - The API key of your Slack incoming webhook 
+
+Either one of:
+1. `node['chef_client']['handler']['slack']['api_key']` - The API key of your Slack incoming webhook
+2. `node['chef_client']['handler']['slack']['webhook_url']` - Can be used if `api_key` is omitted
 
 Optional attributes
 

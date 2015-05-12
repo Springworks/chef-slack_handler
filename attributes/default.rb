@@ -16,7 +16,10 @@
 
 # Required attributes
 default['chef_client']['handler']['slack']['team']       = nil
+
+# Provide either API key or webhook URL
 default['chef_client']['handler']['slack']['api_key']    = nil
+default['chef_client']['handler']['slack']['webhook_url'] = nil
 
 # Optional attributes
 default['chef_client']['handler']['slack']['channel']    = nil
